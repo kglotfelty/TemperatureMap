@@ -118,7 +118,7 @@ def _crystal_growth( vv ):
     return npts
     
 
-def crystal_growth( infile, outfile, clobber ):
+def Xcrystal_growth( infile, outfile, clobber ):
     """
     Given a set of local max, grow the regions until they touch and
     cover the image
@@ -145,6 +145,62 @@ def crystal_growth( infile, outfile, clobber ):
     # Save the values 
     imgd.values = vv
     write_file( img, outfile, clobber=clobber)
+
+
+def crystal_growth( infile, outfile, clobber ):
+    """
+    Tesselate the region and fill in the values
+    """
+    import ciao_contrib.runtool as rt
+    newtool = { 
+            'istool' : True,
+            'req' : [
+                    rt.ParValue("infile", "f", "Input TYPE:II pha file", None),
+                    rt.ParValue("outfile","f", "Outfile", None),
+                    ],
+            'opt' : [
+
+                    rt.ParValue("minpix", "i", "Minimum pixel value", 1 ),
+                    rt.ParValue("edge", "i", "How close to the edge", 3),
+                    rt.ParValue("method", "s", "Method", "tesselate"),
+                    rt.ParValue("clobber","b","Overwrite if file exists",False),
+                    rt.ParRange("verbose","i","Debug level",0,0,5)
+                    ]
+        } # end newtool
+    dmimgtess = rt.CIAOToolParFile("dmimgtess", newtool["req"], newtool["opt"])
+
+    newtool = { 
+            'istool' : True,
+            'req' : [
+                    rt.ParValue("infile", "f", "Input TYPE:II pha file", None),
+                    rt.ParValue("regions","f", "Outfile", None),
+                    rt.ParValue("outfile","f", "Outfile", None),
+                    rt.ParValue("binimg","f", "Outfile", None),
+                    ],
+            'opt' : [
+                    rt.ParValue("coord", "s", "coord system", "sky"),
+                    rt.ParValue("clobber","b","Overwrite if file exists",False),
+                    rt.ParRange("verbose","i","Debug level",0,0,5)
+                    ]
+        } # end newtool
+    mkregmap = rt.CIAOToolParFile("mkregmap", newtool["req"], newtool["opt"])
+
+    dmstat = rt.make_tool("dmstat")
+
+    t1 = CIAOTemporaryFile()
+    dmimgtess( infile, t1.name, minpix=0, edge=0, clobber=True)
+    dmstat( t1.name+"[cols component]")
+    mm = int(dmstat.out_max)
+    
+    mkregmap.infile = infile
+    mkregmap.regions = t1.name+"[component=igrid(1:{}:1)]".format(mm+1)
+    mkregmap.outfile = outfile
+    mkregmap( clobber=clobber)
+    
+    
+    
+
+
 
 
 @lw.handle_ciao_errors( toolname, __revision__)
