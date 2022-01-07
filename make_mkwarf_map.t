@@ -1,7 +1,7 @@
 #!/bin/sh
 
 
-OUTDIR=/pool1/kjg/abin
+OUTDIR=`pwd`/OUT
 INDIR=data
 
 mkdir -p $OUTDIR
@@ -9,7 +9,7 @@ mkdir -p $OUTDIR
 
 mkdir -p $OUTDIR/arfs/
 
-make_mkwarf_map \
+./make_mkwarf_map \
   infile=$INDIR/img.fits \
   mapfile=$INDIR/four+rot.map \
   outroot=$OUTDIR/arfs/out \
