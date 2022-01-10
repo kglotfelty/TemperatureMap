@@ -1,13 +1,13 @@
 #!/bin/sh
 
 
-OUTDIR=/pool1/kjg/abin
+OUTDIR=./OUT
 INDIR=data
 
 mkdir -p $OUTDIR
 
   
-image_tempmap \
+./image_tempmap \
   infile="$INDIR/testsize*_thresh.img" \
   expfile="$INDIR/testsize*_thresh.expmap" \
   outfile=$OUTDIR/image_tempmap.fits \
