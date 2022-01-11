@@ -7,7 +7,7 @@ INDIR=data
 mkdir -p $OUTDIR
 
 
-multi_spec \
+./multi_spec \
   infile=$INDIR/four+rot.map \
   evtfile=$INDIR/acisf09399_repro_evt2.fits \
   outroot=$OUTDIR/multi_spec_single_arf \
@@ -18,7 +18,7 @@ multi_spec \
   mode=h clob+ verb=2
 
 
-multi_spec \
+./multi_spec \
   infile=$INDIR/four+rot.map \
   evtfile=$INDIR/acisf09399_repro_evt2.fits \
   outroot=$OUTDIR/multi_spec_many_arf \

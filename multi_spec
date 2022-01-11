@@ -70,6 +70,16 @@ def _get_arf(grid, arffile):
         load_arf(f"{arffile}_{grid+1}.arf")
 
 
+def _get_rmf(grid, rmffile):
+    """
+    Handle single vs. multi rmfs
+    """
+    if os.path.exists(rmffile):
+        load_rmf(rmffile)
+    else:
+        load_rmf(f"{rmffile}_{grid+1}.rmf")
+
+
 class MultiSpectrum():
     'Class to hold info for multiple spectra stored as image'
 
@@ -156,7 +166,7 @@ class MultiSpectrum():
                 subtract()
 
             _get_arf(grid, self.arffile)
-            load_rmf(self.rmffile)
+            _get_rmf(grid, self.rmffile)
             exec(self.init_str)
             fit()
 
