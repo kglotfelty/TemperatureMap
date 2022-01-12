@@ -93,6 +93,7 @@ class MultiSpectrum():
         self.rmffile = None
         self.model = None
         self.init_str = None
+        self.conclusion = None
         self.retstr = None
         self.out_cols = None
         self.mask_id = None
@@ -128,11 +129,12 @@ class MultiSpectrum():
         self.arffile = arffile
         self.rmffile = rmffile
 
-    def set_model(self, model, init, retval):
+    def set_model(self, model, init, retval, conclusion):
         'Setup model'
         self.model = model
         self.init_str = init
         self.retstr = retval
+        self.conclusion = conclusion
 
         cols = self.retstr+""
         for digit in "().":
@@ -169,6 +171,7 @@ class MultiSpectrum():
             _get_rmf(grid, self.rmffile)
             exec(self.init_str)
             fit()
+            exec(self.conclusion)
 
             retval = eval(self.retstr)
             try:
@@ -313,7 +316,7 @@ def main():
     multi = MultiSpectrum(spectra, bkg_spectra)
     multi.set_responses(pars["arffile"], pars["rmffile"])
     multi.set_model(pars["srcmodel"], pars["initialization"],
-                    pars["return_value"])
+                    pars["return_value"], pars["conclusion"])
     multi.fit()
     multi.save(pars["outroot"], pars["infile"], pars["clobber"], pars)
 
