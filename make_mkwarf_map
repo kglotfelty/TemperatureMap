@@ -69,11 +69,15 @@ def make_warf(regid, pars):
                tmp_single_map_unit.name, clobber=True)
 
         dmst(tmp_single_map_unit.name, centroid=False)
-        if float(dmst.out_sum) == 0:
-            # If there are 0 counts in region, then skip it.
-            return
 
-        sky2tdet(tmp_single_map_unit.name, pars["asphistfile"],
+        # If there are no counts in region, then use the
+        # region itself (ie flat weighting)
+        if float(dmst.out_sum) == 0:
+            img = tmp_single_map.name
+        else:
+            img = tmp_single_map_unit.name
+
+        sky2tdet(img, pars["asphistfile"],
                  tmp_sky2tdet_out.name+"[wmap]", clobber=True)
 
         rmf = pars["rmffile"]
