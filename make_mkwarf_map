@@ -37,6 +37,34 @@ VERB2 = lw.get_logger(TOOLNAME).verbose2
 VERB3 = lw.get_logger(TOOLNAME).verbose3
 VERB5 = lw.get_logger(TOOLNAME).verbose5
 
+def make_wrmf(img, regid, pars):
+
+    sky2tdet = make_tool("sky2tdet")
+    mkacisrmf = make_tool("mkacisrmf")
+    dmhedit = make_tool("dmhedit")
+
+    tmpdir = os.environ["ASCDS_WORK_PATH"]
+    tmp_sky2tdet_out = NamedTemporaryFile(suffix="_sky2tdet_rmf", dir=tmpdir)
+
+    oroot = pars["outroot"]+f"_{regid}"
+
+    VERB3("Processing ")
+
+    try:
+        sky2tdet(img, pars["asphistfile"],
+                 tmp_sky2tdet_out.name+"[wmap]", bin=8, clobber=True)
+
+        mkacisrmf("CALDB", oroot+".rmf", wmap=sky2tdet.outfile,
+                  energy="0.3:11:0.01", channel="1:1024:1", chantype="PI",
+                  asol=pars["asphistfile"],
+                  obsfile=pars["infile"], clobber=True)
+        dmhedit(mkacisrmf.outfile, file="", op="add", key="GRIDVAL",
+                value=regid)
+    except Exception as bad:
+        print(bad)
+
+    return mkacisrmf.outfile
+
 
 def make_warf(regid, pars):
     'Create a weighted ARF'
@@ -50,10 +78,10 @@ def make_warf(regid, pars):
 
     tmpdir = os.environ["ASCDS_WORK_PATH"]
 
-    tmp_single_map = NamedTemporaryFile(dir=tmpdir)
-    tmp_single_map_unit = NamedTemporaryFile(dir=tmpdir)
-    tmp_sky2tdet_out = NamedTemporaryFile(dir=tmpdir)
-    tmp_mkwarf_out = NamedTemporaryFile(dir=tmpdir)
+    tmp_single_map = NamedTemporaryFile(dir=tmpdir, suffix="_map")
+    tmp_single_map_unit = NamedTemporaryFile(dir=tmpdir, suffix="_unit")
+    tmp_sky2tdet_out = NamedTemporaryFile(dir=tmpdir, suffix="_sky2tdet")
+    tmp_mkwarf_out = NamedTemporaryFile(dir=tmpdir, suffix="_mkwarf")
 
     oroot = pars["outroot"]+f"_{regid}"
 
@@ -80,7 +108,11 @@ def make_warf(regid, pars):
         sky2tdet(img, pars["asphistfile"],
                  tmp_sky2tdet_out.name+"[wmap]", clobber=True)
 
-        rmf = pars["rmffile"]
+        if pars["rmffile"] == "":
+            rmf = make_wrmf(img, regid, pars)
+        else:
+            rmf = pars["rmffile"]
+
         mkwarf(tmp_sky2tdet_out.name, oroot+".arf", tmp_mkwarf_out.name,
                spectrum="", egrid=f"grid({rmf}[cols energ_lo,energ_hi])",
                msk=pars["maskfile"], clobber=True)
